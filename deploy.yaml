@@ -1,0 +1,45 @@
+---
+- name: VM deployment
+  hosts: all
+  gather_facts: true
+  vars:
+    public_token: ff96d4c5d30abf78
+    db_password_api: ahFaef3ooghe0ujaiJ4kooth6meiPhai
+  tasks:
+    - import_tasks: tasks/base.yaml
+    - import_tasks: tasks/database.yaml
+    - import_tasks: tasks/application.yaml
+    - import_tasks: tasks/nfs.yaml
+    - import_tasks: tasks/tcpdump.yaml
+    - import_tasks: tasks/flags.yaml
+    - import_tasks: tasks/post.yaml
+    - import_tasks: tasks/test.yaml
+  handlers:
+    - name: restart haproxy
+      systemd:
+        name: haproxy
+        state: restarted
+        enabled: true
+
+    - name: restart gunicorn
+      systemd:
+        name: gunicorn
+        daemon_reload: true
+        state: restarted
+        enabled: true
+
+    - name: restart tcpdump
+      systemd:
+        name: tcpdump
+        daemon_reload: true
+        state: restarted
+        enabled: true
+
+    - name: restart mariadb
+      systemd:
+        name: mariadb
+        state: restarted
+        enabled: true
+
+    - name: reload nfs
+      command: 'exportfs -ra'

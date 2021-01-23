@@ -1,0 +1,10 @@
+---
+- name: copy tcpdump systemd unit file
+  copy:
+    dest: /etc/systemd/system/tcpdump.service
+    src: tcpdump.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart tcpdump

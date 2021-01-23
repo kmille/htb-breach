@@ -1,0 +1,44 @@
+---
+- name: copy haproxy config
+  template:
+    dest: /etc/haproxy/haproxy.cfg
+    src: haproxy.cfg
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart haproxy
+
+- name: copy gunicorn systemd unit file
+  copy:
+    dest: /etc/systemd/system/gunicorn.service
+    src: gunicorn.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart gunicorn
+
+- name: copy app.py
+  template:
+    dest: /home/api/app.py
+    src: app.py
+    owner: api
+    group: api
+    mode: '0644'
+  notify:
+    - restart gunicorn
+
+- name: copy requirements.txt
+  copy:
+    dest: /home/api/requirements.txt
+    src: requirements.txt
+    owner: api
+    group: api
+    mode: '0644'
+
+- name: install dependencies in virtualenv
+  pip:
+    requirements: /home/api/requirements.txt
+    virtualenv: /home/api/venv
+    virtualenv_command: /usr/bin/python3 -m venv

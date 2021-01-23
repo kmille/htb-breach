@@ -1,0 +1,18 @@
+---
+- name: deploy user token
+  copy:
+    dest: /home/api/user.txt
+    content: "{{ user_token }}\n"
+    owner: api
+    group: api
+    mode: 0600
+  when: user_token is defined
+
+- name: deploy root token
+  copy:
+    dest: /root/root.txt
+    content: "{{ root_token }}\n"
+    owner: root
+    group: root
+    mode: 0600
+  when: root_token is defined

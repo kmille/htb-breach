@@ -1,0 +1,75 @@
+---
+- set_fact:
+    admin_token: "{{ lookup('password', '/dev/null chars=hexdigits,digits length=16') | lower }}"
+
+- name: debug
+  debug:
+    msg: "generated admin token: {{ admin_token }}"
+
+
+- name: copy db-init.sql
+  template:
+    dest: /home/api/db-init.sql
+    src: db-init.sql
+    owner: api
+    group: api
+    mode: 0644
+
+- name: init database
+  shell: |
+    mysql < /home/api/db-init.sql
+  args:
+    executable: /bin/bash
+
+- name: remove db-init.sql
+  file:
+    dest: /home/api/db-init.sql
+    state: absent
+
+- name: ansible is great
+  block:
+    - name: enable ssl for mariadb-config
+      ini_file:
+        path: /etc/mysql/my.cnf
+        section: client-server
+        option: ssl
+        value: '1'
+
+    - name: add ca-cert.pem to mariadb-config
+      ini_file:
+        path: /etc/mysql/my.cnf
+        section: client-server
+        option: ssl-ca
+        value: /etc/mysql/ca-cert.pem
+
+    - name: add server-cert.pem to mariadb-config
+      ini_file:
+        path: /etc/mysql/my.cnf
+        section: client-server
+        option: ssl-cert
+        value: /etc/mysql/server-cert.pem
+
+    - name: add server-cert.pem to mariadb-config
+      ini_file:
+        path: /etc/mysql/my.cnf
+        section: client-server
+        option: ssl-key
+        value: /etc/mysql/server-key.pem
+
+- name: copy openssl mysql config
+  copy:
+    dest: /etc/mysql/openssl_mysql.cnf
+    src: openssl_mysql.cnf
+
+- name: create mysql certificates
+  shell: |
+    openssl genrsa 2048 > /etc/mysql/ca-key.pem
+    openssl req -new -x509 -nodes -days 3650 -key /etc/mysql/ca-key.pem -extensions v3_ca -config /etc/mysql/openssl_mysql.cnf > /etc/mysql/ca-cert.pem
+    openssl genrsa 2048 > /etc/mysql/server-key.pem
+    openssl req -newkey rsa:2048 -days 3650 -nodes -key /etc/mysql/server-key.pem -config /etc/mysql/openssl_mysql.cnf > /etc/mysql/server-req.pem
+    openssl x509 -req -in /etc/mysql/server-req.pem -days 3650 -CA /etc/mysql/ca-cert.pem -set_serial 01 -CAkey /etc/mysql/ca-key.pem > /etc/mysql/server-cert.pem
+  args:
+    executable: /bin/bash
+    creates: /etc/mysql/server-cert.pem
+  notify:
+    - restart mariadb

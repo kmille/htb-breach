@@ -1,0 +1,1 @@
+/opt/nfs *(ro,no_subtree_check)

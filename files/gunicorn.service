@@ -1,0 +1,17 @@
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+Type=notify
+User=api
+Group=api
+WorkingDirectory=/home/api
+ExecStart=/home/api/venv/bin/gunicorn --bind 127.0.0.1:5000 app:app
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,49 @@
+---
+- name: set hostname
+  hostname:
+    name: breach
+
+- lineinfile:
+    dest: /etc/hosts
+    line: "127.0.0.1       breach.htb breach"
+    state: present
+
+- name: add api user
+  user:
+    name: api
+    shell: /bin/bash
+    expires: -1
+    password: '$6$DoNotBruteForce$7i2qO0h8QN2xMp23kRWkF.DdDsmqhxKexzVHacHrXDyHBnT4sZI/G0DmVDhk5tLojA/PHP7hvrNkincYtcQii1'
+    groups: sudo
+
+- name: create /home/api/.ssh file
+  file:
+    name: /home/api/.ssh/
+    state: directory
+    owner: api
+    group: api
+    mode: '0700'
+
+- name: create authorized_keys file
+  file:
+    name: /home/api/.ssh/authorized_keys
+    state: touch
+    owner: api
+    group: api
+    mode: '0600'
+
+- name: install software
+  package:
+    name: "{{ item }}"
+    state: present
+    cache_valid_time: 3600
+  with_items:
+    - gcc
+    - python3-dev
+    - git
+    - haproxy
+    - python3-venv
+    - tcpdump
+    - nfs-common
+    - nfs-kernel-server
+    - mariadb-server

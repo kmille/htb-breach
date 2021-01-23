@@ -1,0 +1,11 @@
+[Unit]
+Description=tcpdump
+After=network.target
+
+[Service]
+ExecStart=/usr/sbin/tcpdump -nUi lo -C 50 -Z root -w /opt/nfs/mysql-encrypted.pcap port 3306
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

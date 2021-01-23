@@ -1,0 +1,21 @@
+- name: create nfs share directory
+  file:
+    name: /opt/nfs
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: copy exports file
+  copy:
+    src: exports
+    dest: /etc/exports
+    owner: root
+    group: root
+    mode: 0644
+  notify: reload nfs
+
+- name: clone repo
+  git:
+    repo: https://github.com/kmille/htb-breach.git
+    dest: /opt/nfs/htb-breach

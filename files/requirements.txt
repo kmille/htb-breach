@@ -1,0 +1,6 @@
+wheel
+Flask
+gunicorn
+mysql-connector
+psutil
+sshpubkeys
